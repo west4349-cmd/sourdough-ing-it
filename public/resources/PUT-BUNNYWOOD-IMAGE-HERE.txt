@@ -1,0 +1,2 @@
+Place the approved Bunnywood town master image in this folder with the exact filename:
+bunnywood-town-master.png
