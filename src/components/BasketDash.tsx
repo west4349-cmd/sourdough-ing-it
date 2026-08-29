@@ -1,77 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-const items = [
-  ['🌾', 'Brown rice flour', true, 'Starter food. Put it in the basket!'],
-  ['🥤', 'Orange soda', false, 'Starter needs clean water, not sugary soda.'],
-  ['💧', 'Pure water', true, 'Yes. Clean drinking water belongs in our starter kit.'],
-  ['🍬', 'Candy sprinkles', false, 'Fun for treats, but not for a starter.'],
-  ['⚖️', 'Digital gram scale', true, 'Yes. We measure sourdough by weight.'],
-  ['🍟', 'Potato chips', false, 'Nope. Bunny can eat those later.'],
-  ['🫙', 'Clear glass jar', true, 'Yes. We need to see bubbles and rise.'],
-  ['🌡️', 'Thermometer', true, 'Yes. Temperature changes fermentation speed.'],
-] as const;
+type Kind='flour'|'water'|'jar'|'scale'|'thermometer'|'soda'|'chips'|'candy';
+type Item={kind:Kind;label:string;good:boolean;x:number;y:number};
+const pool:{kind:Kind;label:string;good:boolean}[]=[
+ {kind:'flour',label:'Brown rice flour',good:true},{kind:'water',label:'Pure water',good:true},{kind:'jar',label:'Glass jar',good:true},{kind:'scale',label:'Gram scale',good:true},{kind:'thermometer',label:'Thermometer',good:true},{kind:'soda',label:'Orange soda',good:false},{kind:'chips',label:'Potato chips',good:false},{kind:'candy',label:'Candy',good:false}
+];
+function sprite(kind:Kind){
+ if(kind==='flour')return <svg viewBox="0 0 100 110" aria-hidden="true"><path d="M22 18h56l9 75c1 8-5 13-13 13H26c-8 0-14-5-13-13z" fill="#f6e7bd" stroke="#7c5737" strokeWidth="5"/><path d="M28 18c5-11 39-11 44 0" fill="#d49a56" stroke="#7c5737" strokeWidth="5"/><path d="M37 48c14-16 20-16 27 0-7 17-18 25-27 0Z" fill="#86a94d"/><path d="M50 44v33" stroke="#6b8b3f" strokeWidth="4"/><text x="50" y="94" textAnchor="middle" fontSize="13" fontWeight="900" fill="#5d422c">RICE</text></svg>;
+ if(kind==='water')return <svg viewBox="0 0 100 110" aria-hidden="true"><path d="M36 8h28v14h8v76c0 6-5 10-11 10H39c-6 0-11-4-11-10V22h8z" fill="#dff7ff" stroke="#5d7f8d" strokeWidth="5"/><path d="M33 54h34v38H33z" fill="#78c9e8" opacity=".8"/><rect x="37" y="6" width="26" height="13" rx="4" fill="#3d79a8"/><text x="50" y="76" textAnchor="middle" fontSize="13" fontWeight="900" fill="#245a75">PURE</text></svg>;
+ if(kind==='jar')return <svg viewBox="0 0 100 110" aria-hidden="true"><rect x="25" y="22" width="50" height="76" rx="12" fill="#e8fbff" stroke="#6f7d78" strokeWidth="5"/><rect x="22" y="13" width="56" height="15" rx="5" fill="#b5b9b1" stroke="#6f7d78" strokeWidth="4"/><path d="M31 73c10-6 28 7 38 0v17H31z" fill="#d9c18d"/><circle cx="43" cy="77" r="3" fill="#fff"/><circle cx="57" cy="83" r="4" fill="#fff"/></svg>;
+ if(kind==='scale')return <svg viewBox="0 0 100 110" aria-hidden="true"><ellipse cx="50" cy="28" rx="37" ry="15" fill="#d9e4e3" stroke="#4b5c5c" strokeWidth="5"/><rect x="18" y="34" width="64" height="59" rx="13" fill="#6d8584" stroke="#4b5c5c" strokeWidth="5"/><rect x="31" y="55" width="38" height="21" rx="5" fill="#d8f0c2"/><text x="50" y="70" textAnchor="middle" fontSize="14" fontWeight="900" fill="#334a34">50g</text></svg>;
+ if(kind==='thermometer')return <svg viewBox="0 0 100 110" aria-hidden="true"><rect x="42" y="10" width="16" height="70" rx="8" fill="#f8f0df" stroke="#5f5144" strokeWidth="5"/><circle cx="50" cy="88" r="17" fill="#e95e4e" stroke="#5f5144" strokeWidth="5"/><rect x="47" y="32" width="6" height="55" rx="3" fill="#e95e4e"/></svg>;
+ if(kind==='soda')return <svg viewBox="0 0 100 110" aria-hidden="true"><path d="M31 8h38l-5 96H36z" fill="#f58b3f" stroke="#74432a" strokeWidth="5"/><rect x="28" y="8" width="44" height="12" rx="5" fill="#b9b9b9"/><circle cx="50" cy="56" r="20" fill="#ffd95a"/><text x="50" y="62" textAnchor="middle" fontSize="13" fontWeight="900" fill="#7d3c22">SODA</text></svg>;
+ if(kind==='chips')return <svg viewBox="0 0 100 110" aria-hidden="true"><path d="M24 12h52l8 88H16z" fill="#efcb48" stroke="#7f5a2f" strokeWidth="5"/><path d="M24 35h52" stroke="#d34a3d" strokeWidth="14"/><circle cx="50" cy="70" r="17" fill="#e4b341" stroke="#8d6b2e" strokeWidth="3"/></svg>;
+ return <svg viewBox="0 0 100 110" aria-hidden="true"><path d="M22 43 8 28l17-5 6-18 16 13 18-11 8 19 18 5-13 16 7 19-21 2-10 17-16-13-20 8 1-21-15-12z" fill="#ed79b2" stroke="#80506a" strokeWidth="4"/><circle cx="40" cy="45" r="5" fill="#fff2a8"/><circle cx="60" cy="61" r="5" fill="#8ce0ff"/><circle cx="47" cy="72" r="5" fill="#b9ef87"/></svg>;
+}
+function BasketArt(){return <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M27 42h126l-15 48H42z" fill="#b96f37" stroke="#6b3e24" strokeWidth="6"/><path d="M48 42c5-37 79-37 84 0" fill="none" stroke="#d89a58" strokeWidth="10"/><path d="m42 55 89 34m-64-36 68 25m-85 11 71-34m-48 34 62-30" stroke="#e3ad70" strokeWidth="5" opacity=".8"/></svg>}
+function makeItem():Item{const p=pool[Math.floor(Math.random()*pool.length)];return{...p,x:12+Math.random()*76,y:-12}}
 
-export default function BasketDash({ onEarn, onExit }: { onEarn: (coins: number) => void; onExit: () => void }) {
-  const [index, setIndex] = useState(0);
-  const [hearts, setHearts] = useState(3);
-  const [score, setScore] = useState(0);
-  const [choice, setChoice] = useState<boolean | null>(null);
-  const [claimed, setClaimed] = useState(false);
-  const done = index >= items.length || hearts <= 0;
-  const current = items[Math.min(index, items.length - 1)];
-  const reward = Math.max(2, score + (score === items.length ? 3 : 1));
-  const correct = choice === current?.[2];
-
-  function choose(keep: boolean) {
-    if (choice !== null || done) return;
-    setChoice(keep);
-    if (keep === current[2]) setScore((s) => s + 1);
-    else setHearts((h) => Math.max(0, h - 1));
-  }
-
-  function next() {
-    setChoice(null);
-    setIndex((i) => i + 1);
-  }
-
-  return (
-    <section className="game-card">
-      <header className="game-header">
-        <div><small>QUEST MEADOW GAME</small><h2>🧺 Basket Dash</h2></div>
-        <div className="hud"><span>❤️ {hearts}</span><span>🪙 {score}</span></div>
-      </header>
-      {!done ? (
-        <>
-          <div className="meadow-lane">
-            <div className="moving-item"><span>{current[0]}</span><b>{current[1]}</b></div>
-            <div className="basket">🧺<small>STARTER KIT</small></div>
-          </div>
-          <p className="game-instruction">Does this belong in Bunny’s starter kit?</p>
-          <div className="game-actions">
-            <button onClick={() => choose(true)} disabled={choice !== null}>🧺 IN THE BASKET</button>
-            <button onClick={() => choose(false)} disabled={choice !== null}>👋 PASS IT BY</button>
-          </div>
-          {choice !== null && (
-            <div className={`feedback ${correct ? 'good' : 'watch'}`}>
-              <b>{correct ? '⭐ Great sort!' : '🐇 Good thing we checked!'}</b>
-              <p>{current[3]}</p>
-              <button onClick={next}>NEXT ITEM →</button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="game-finish">
-          <span>🎉</span>
-          <h2>Dash complete!</h2>
-          <p>You sorted {score} items correctly.</p>
-          <strong>Reward: 🪙 {reward}</strong>
-          {!claimed ? (
-            <button onClick={() => { onEarn(reward); setClaimed(true); }}>COLLECT {reward} COINS</button>
-          ) : (
-            <button onClick={onExit}>BACK TO BUNNY →</button>
-          )}
-        </div>
-      )}
-    </section>
-  );
+export default function BasketDash({onEarn,onExit}:{onEarn:(coins:number)=>void;onExit:()=>void}){
+ const[started,setStarted]=useState(false);const[done,setDone]=useState(false);const[claimed,setClaimed]=useState(false);const[basketX,setBasketX]=useState(50);const[item,setItem]=useState<Item>(makeItem);const[score,setScore]=useState(0);const[hearts,setHearts]=useState(3);const[time,setTime]=useState(30);const[message,setMessage]=useState('Catch starter supplies. Avoid the junk!');
+ const reward=useMemo(()=>Math.max(2,Math.min(8,Math.floor(score/2)+2)),[score]);
+ function move(dir:number){setBasketX(x=>Math.max(8,Math.min(92,x+dir*12)))}
+ function resolve(current:Item,caught:boolean){if(caught&&current.good){setScore(s=>s+1);setMessage(`Great catch: ${current.label}!`)}else if(caught&&!current.good){setHearts(h=>Math.max(0,h-1));setMessage(`Oops! ${current.label} does not belong in the starter kit.`)}else if(!caught&&current.good){setHearts(h=>Math.max(0,h-1));setMessage(`Missed ${current.label}. Starter supplies are the ones we want!`)}else{setScore(s=>s+1);setMessage(`Nice dodge! ${current.label} is not for the starter.`)}setItem(makeItem())}
+ useEffect(()=>{if(!started||done)return;const tick=window.setInterval(()=>setTime(t=>t<=1?0:t-1),1000);return()=>clearInterval(tick)},[started,done]);
+ useEffect(()=>{if(started&&!done&&(time<=0||hearts<=0))setDone(true)},[time,hearts,started,done]);
+ useEffect(()=>{if(!started||done)return;const fall=window.setInterval(()=>setItem(cur=>{const next={...cur,y:cur.y+4.5};if(next.y>=76){const caught=Math.abs(next.x-basketX)<14;window.setTimeout(()=>resolve(next,caught),0);return{...next,y:-30}}return next}),90);return()=>clearInterval(fall)},[started,done,basketX]);
+ useEffect(()=>{function key(e:KeyboardEvent){if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1)}window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[]);
+ function restart(){setStarted(false);setDone(false);setClaimed(false);setBasketX(50);setItem(makeItem());setScore(0);setHearts(3);setTime(30);setMessage('Catch starter supplies. Avoid the junk!')}
+ return <section className="arcade-game">
+  {!started&&!done&&<div className="arcade-start"><div className="arcade-logo"><span className="mini-bunny">🐇</span><div><small>QUEST MEADOW ARCADE</small><h2>BASKET DASH</h2></div></div><div className="arcade-instructions"><div><b>1</b><span>Move the basket</span><small>Use ← → or the big buttons.</small></div><div><b>2</b><span>Catch starter supplies</span><small>Flour, water, jar, scale, thermometer.</small></div><div><b>3</b><span>Avoid junk food</span><small>Three mistakes and the round ends.</small></div></div><button className="start-game" onClick={()=>setStarted(true)}>START 30-SECOND DASH →</button></div>}
+  {started&&!done&&<><div className="arcade-hud"><span>⏱ {time}</span><span>⭐ {score}</span><span>❤ {hearts}</span></div><div className="arcade-field"><div className="distant-barn"/><div className="fence f1"/><div className="fence f2"/><div className="flower-row">✿　✼　✿　✼　✿　✼　✿</div><div className="falling-item" style={{left:`${item.x}%`,top:`${item.y}%`}}>{sprite(item.kind)}<b>{item.label}</b></div><div className="player-basket" style={{left:`${basketX}%`}}><BasketArt/></div><div className="arcade-message">{message}</div></div><div className="arcade-controls"><button onClick={()=>move(-1)}>◀ MOVE LEFT</button><button onClick={()=>move(1)}>MOVE RIGHT ▶</button></div></>}
+  {done&&<div className="arcade-finish"><div className="finish-bunny">🐇</div><div><small>ROUND COMPLETE</small><h2>{score>=8?'Amazing basket work!':score>=4?'Nice job, baker!':'Good practice!'}</h2><p>You finished with <b>{score} points</b>. Correct catches and smart dodges both score.</p><strong>Coin reward: 🪙 {reward}</strong>{!claimed?<button onClick={()=>{onEarn(reward);setClaimed(true)}}>COLLECT {reward} COINS</button>:<div className="finish-actions"><button onClick={restart}>PLAY AGAIN</button><button onClick={onExit}>BACK TO GAME TRAIL</button></div>}</div></div>}
+ </section>
 }
