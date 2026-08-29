@@ -1,0 +1,30 @@
+import { useState } from 'react';
+import { starterSupplies } from '../data/game';
+
+type Props={completed:boolean;onComplete:()=>void;onBack:()=>void;onQuest:()=>void};
+const lessons=[
+ {title:'What is a starter?',text:'A sourdough starter is a living culture of flour, water, wild yeast, and helpful bacteria. We feed it and watch how it changes.',art:'starter'},
+ {title:'What do we need?',text:'A good setup makes learning easier. We need ingredients for the starter and tools that help us measure, mix, observe, and care for it.',art:'bench'},
+ {title:'Why these supplies?',text:'Every item has a job. Learning those jobs now will help you make better decisions later when your starter begins changing.',art:'shelf'},
+] as const;
+export default function Schoolhouse({completed,onComplete,onBack,onQuest}:Props){
+ const[step,setStep]=useState(completed?3:0);const[openItem,setOpenItem]=useState<string|null>(null);
+ const lesson=lessons[Math.min(step,2)];
+ return <section className="school-place">
+  <div className="school-scene">
+   <svg className="school-room-art" viewBox="0 0 1200 660" role="img" aria-label="Warm Bunnywood schoolhouse classroom">
+    <defs><linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f5d99f"/><stop offset="1" stopColor="#dba65f"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#9a623a"/><stop offset="1" stopColor="#6d4329"/></linearGradient></defs>
+    <rect width="1200" height="660" fill="url(#wall)"/><rect y="465" width="1200" height="195" fill="url(#floor)"/>
+    <rect x="62" y="55" width="330" height="240" rx="18" fill="#8bcbe0" stroke="#71462c" strokeWidth="20"/><path d="M227 55v240M62 175h330" stroke="#71462c" strokeWidth="12"/><circle cx="330" cy="102" r="34" fill="#ffe17a" opacity=".9"/>
+    <rect x="500" y="62" width="610" height="260" rx="22" fill="#315d3c" stroke="#6b4329" strokeWidth="22"/><text x="805" y="132" textAnchor="middle" fontSize="38" fontWeight="900" fill="#fff5d4">STARTER SCHOOL</text><text x="805" y="190" textAnchor="middle" fontSize="24" fontWeight="700" fill="#e8d9a7">LEARN  →  EARN  →  SHOP  →  MAKE</text><path d="M605 242h390" stroke="#efdca4" strokeWidth="6" strokeLinecap="round"/><circle cx="590" cy="242" r="12" fill="#efdca4"/><circle cx="1010" cy="242" r="12" fill="#efdca4"/>
+    <rect x="80" y="365" width="180" height="100" rx="12" fill="#75482c"/><rect x="315" y="365" width="180" height="100" rx="12" fill="#75482c"/><rect x="550" y="365" width="180" height="100" rx="12" fill="#75482c"/><rect x="785" y="365" width="180" height="100" rx="12" fill="#75482c"/>
+    <g transform="translate(965 335)"><ellipse cx="80" cy="210" rx="72" ry="45" fill="#fff0d6" stroke="#7a5238" strokeWidth="8"/><ellipse cx="50" cy="86" rx="27" ry="70" fill="#f4eee6" stroke="#7a5238" strokeWidth="7"/><ellipse cx="112" cy="86" rx="27" ry="70" fill="#f4eee6" stroke="#7a5238" strokeWidth="7"/><circle cx="80" cy="150" r="72" fill="#f4eee6" stroke="#7a5238" strokeWidth="8"/><circle cx="55" cy="142" r="7" fill="#2d211a"/><circle cx="105" cy="142" r="7" fill="#2d211a"/><ellipse cx="80" cy="163" rx="10" ry="7" fill="#c96c6d"/><path d="M80 170q-18 18-36 2M80 170q18 18 36 2" fill="none" stroke="#51362b" strokeWidth="5"/><path d="M20 206q60-34 120 0v78H20z" fill="#3f7746" stroke="#6f4a31" strokeWidth="7"/><path d="M80 207v78" stroke="#d7c28d" strokeWidth="5"/></g>
+   </svg>
+   <button className="school-back" onClick={onBack}>← BUNNYWOOD</button>
+   <div className="school-dialogue"><small>BUNNY'S LESSON</small><h1>{completed?'Starter School: Shopping List':lesson.title}</h1><p>{completed?'You passed the first lesson. Your starter shopping list is unlocked. Tap any item to review why we need it.':lesson.text}</p></div>
+  </div>
+  {!completed&&step<3&&<div className="lesson-path"><div className="lesson-progress"><span style={{width:`${((step+1)/3)*100}%`}}/></div><div className={`lesson-visual ${lesson.art}`}><div className="lesson-object">{lesson.art==='starter'?<><div className="drawn-jar"><i/><b>STARTER</b></div><div className="microbe m1"/><div className="microbe m2"/><div className="microbe m3"/></>:lesson.art==='bench'?<><div className="drawn-flour">RICE<br/>FLOUR</div><div className="drawn-water">FILTERED<br/>WATER</div><div className="drawn-scale">50g</div><div className="drawn-bowl"/></>:<><div className="drawn-shelf"><i/><i/><i/></div><div className="drawn-therm">72°</div><div className="drawn-tool"/></>}</div><div className="lesson-copy"><small>LESSON {step+1} OF 3</small><h2>{lesson.title}</h2><p>{lesson.text}</p><button onClick={()=>setStep(s=>s+1)}>{step===2?'SHOW MY SHOPPING LIST →':'CONTINUE →'}</button></div></div>}
+  {!completed&&step>=3&&<div className="shopping-lesson"><div className="shopping-title"><small>STARTER SCHOOL · FINAL ACTIVITY</small><h2>Meet Your Starter Shopping List</h2><p>Tap every item and learn its job. When you are ready, unlock the list and begin earning coins.</p></div><div className="school-supply-grid">{starterSupplies.map(s=><button key={s.id} className={openItem===s.id?'open':''} onClick={()=>setOpenItem(openItem===s.id?null:s.id)}><span>{s.emoji}</span><b>{s.name}</b><small>{openItem===s.id?s.teaching:`Costs ${s.cost} coins`}</small></button>)}</div><button className="unlock-list" onClick={onComplete}>🏅 COMPLETE STARTER SCHOOL & UNLOCK SHOPPING LIST</button></div>}
+  {completed&&<div className="shopping-lesson"><div className="shopping-title"><small>STARTER APPRENTICE</small><h2>Your Shopping Mission</h2><p>You know what the starter needs. Now earn coins in Quest Meadow and buy the supplies from the Grocery Store and Supply Shop.</p></div><div className="school-supply-grid compact">{starterSupplies.map(s=><button key={s.id} className={openItem===s.id?'open':''} onClick={()=>setOpenItem(openItem===s.id?null:s.id)}><span>{s.emoji}</span><b>{s.name}</b><small>{openItem===s.id?s.teaching:`🪙 ${s.cost}`}</small></button>)}</div><button className="unlock-list" onClick={onQuest}>🗺️ GO TO QUEST MEADOW →</button></div>}
+ </section>
+}
