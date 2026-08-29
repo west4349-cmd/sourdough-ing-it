@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ChapterPath from './components/ChapterPath';
 import BunnyGuide from './components/BunnyGuide';
-import BasketDash from './components/BasketDash';
+import QuestMeadow from './components/QuestMeadow';
 import { chapters, starterSupplies, type ChapterId } from './data/game';
 
 type View = 'town' | 'quest' | 'store' | 'kitchen' | 'starter' | 'loaf' | 'bakery';
@@ -18,10 +18,10 @@ export default function App(){
  function earn(n:number){setGame(g=>({...g,coins:g.coins+n}))}
  function buyNext(){if(!nextSupply||game.coins<nextSupply.cost)return;setGame(g=>({...g,coins:g.coins-nextSupply.cost,owned:[...g.owned,nextSupply.id]}))}
  function goTownHotspot(destination:View){setView(destination)}
- return <div className={`app-shell ${view==='town'?'town-mode':''}`}>
-  {view!=='town'&&<header className="topbar"><div><span>🐇</span><div><b>SOURDOUGH-ING IT!</b><small>ADVENTURES WITH BUNNY</small></div></div><strong>🪙 {game.coins}</strong></header>}
-  <main className={view==='town'?'town-main':''}>
-   {view!=='town'&&<section className="adventure-header"><ChapterPath current={game.chapter}/><div className="chapter-title"><small>MAIN ADVENTURE</small><h1>{currentChapter.icon} {currentChapter.title}</h1><p>{currentChapter.summary}</p></div></section>}
+ return <div className={`app-shell ${view==='town'?'town-mode':''} ${view==='quest'?'quest-mode':''}`}>
+  {view!=='town'&&view!=='quest'&&<header className="topbar"><div><span>🐇</span><div><b>SOURDOUGH-ING IT!</b><small>ADVENTURES WITH BUNNY</small></div></div><strong>🪙 {game.coins}</strong></header>}
+  <main className={view==='town'||view==='quest'?'town-main':''}>
+   {view!=='town'&&view!=='quest'&&<section className="adventure-header"><ChapterPath current={game.chapter}/><div className="chapter-title"><small>MAIN ADVENTURE</small><h1>{currentChapter.icon} {currentChapter.title}</h1><p>{currentChapter.summary}</p></div></section>}
    {view==='town'&&<section className="town-map town-master"><img src="./resources/bunnywood-town-master.png" alt="Bunnywood town"/>
     <button className="map-hotspot starter-hotspot" aria-label="Enter Starter Cottage" onClick={()=>goTownHotspot('starter')}/>
     <button className="map-hotspot bakery-hotspot" aria-label="Enter Bunnywood Bakery" onClick={()=>goTownHotspot('bakery')}/>
@@ -31,7 +31,7 @@ export default function App(){
     <button className="map-hotspot track-hotspot" aria-label="Track my starter" onClick={()=>goTownHotspot('starter')}/>
     <button className="map-hotspot recipes-hotspot" aria-label="Recipes" onClick={()=>goTownHotspot('kitchen')}/>
    </section>}
-   {view==='quest'&&<><BunnyGuide eyebrow="QUEST MEADOW" title="Earn coins for the next starter supply." text={nextSupply?`${nextSupply.name} costs ${nextSupply.cost} coins. You have ${game.coins}. Let’s play until we can afford it.`:'Our starter shopping is complete, but you can still practice and earn.'} secondary="← BACK TO TOWN" onSecondary={()=>setView('town')}/><BasketDash onEarn={earn} onExit={()=>setView(nextSupply&&game.coins>=nextSupply.cost?'store':'quest')}/></>}
+   {view==='quest'&&<QuestMeadow coins={game.coins} goalName={nextSupply?.name} goalCost={nextSupply?.cost} onEarn={earn} onBack={()=>setView('town')} onGoStore={()=>setView('store')}/>} 
    {view==='store'&&nextSupply&&<><BunnyGuide eyebrow="GROCERY MISSION" title={`Next: ${nextSupply.name}`} text={nextSupply.teaching} button={game.coins>=nextSupply.cost?`BUY FOR ${nextSupply.cost} COINS`:'EARN MORE COINS →'} onClick={game.coins>=nextSupply.cost?buyNext:()=>setView('quest')} secondary="← BACK TO TOWN" onSecondary={()=>setView('town')}/><section className="supply-shelf"><div className="big-item"><span>{nextSupply.emoji}</span><h2>{nextSupply.name}</h2><strong>🪙 {nextSupply.cost}</strong></div><div className="shopping-progress"><small>STARTER SHOPPING LIST</small>{starterSupplies.map(s=><span key={s.id} className={game.owned.includes(s.id)?'done':s.id===nextSupply.id?'current':''}>{game.owned.includes(s.id)?'✓':s.emoji} {s.name}</span>)}</div></section></>}
    {view==='store'&&!nextSupply&&<BunnyGuide eyebrow="SHOPPING COMPLETE" title="We have everything!" text="Now we go home and make the starter." button="🏡 GO TO THE KITCHEN →" onClick={()=>setView('kitchen')}/>} 
    {view==='kitchen'&&<section className="room-card kitchen-room"><div className="room-scene">☀️　🥣　⚖️　🌀<span>🐇</span></div><BunnyGuide eyebrow="STARTER COTTAGE · KITCHEN" title={game.starterMade?'Our starter is already made.':'Let’s make our starter.'} text={game.starterMade?'Now our job is to care for it like a little kitchen pet.':'Real-life lesson: weigh 50g brown rice flour and 50g pure water. Mix until no dry flour remains, scrape the jar clean, mark the starting height, and cover loosely.'} button={game.starterMade?'CHECK MY STARTER →':'MAKE THE STARTER →'} onClick={()=>{if(!game.starterMade)setGame(g=>({...g,starterMade:true}));setView('starter')}} secondary="← BACK TO TOWN" onSecondary={()=>setView('town')}/></section>}
