@@ -18,7 +18,7 @@ export const chapters = [
 
 export const starterSupplies: Supply[] = [
   { id: 'flour', name: 'Brown Rice Flour', emoji: '🌾', cost: 6, teaching: 'We begin with brown rice flour because it is a dependable flour for getting the starter going.' },
-  { id: 'water', name: 'Pure Water', emoji: '💧', cost: 5, teaching: 'Use clean drinking water. Chlorinated or strongly treated water can make starter care harder.' },
+  { id: 'water', name: 'Filtered Water', emoji: '💧', cost: 5, teaching: 'Use filtered drinking water for the starter. Filtering helps remove chlorine and other tastes or treatments that can interfere with fermentation.' },
   { id: 'jar', name: 'Clear Glass Jar', emoji: '🫙', cost: 7, teaching: 'A clear jar lets us watch bubbles and see how high the starter rises.' },
   { id: 'scale', name: 'Digital Gram Scale', emoji: '⚖️', cost: 10, teaching: 'Sourdough is easier to repeat when ingredients are measured by grams.' },
   { id: 'bowl', name: 'Mixing Bowl', emoji: '🥣', cost: 5, teaching: 'A mixing bowl gives us room to measure and combine ingredients cleanly.' },
