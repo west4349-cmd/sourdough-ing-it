@@ -1,38 +1,81 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import './QuestMeadow.css';
 
 type Props={coins:number;goalName?:string;goalCost?:number;onEarn:(n:number)=>void;onBack:()=>void;onGoStore:()=>void};
-type Zone='hill'|'marsh'|'woods'|'bridge'|'crow'|'cave'|'wagon';
-type Challenge={zone:Zone;name:string;icon:string;story:string;question:string;choices:string[];answer:number;item:string};
-const challenges:Challenge[]=[
- {zone:'hill',name:'Windmill Hill',icon:'🌬️',story:'The trail gate is jammed. The old windmill has three gear settings and only one turns the gate mechanism.',question:'The large gear turns 2 times for every 6 turns of the small gear. If the small gear turns 18 times, how many times does the large gear turn?',choices:['4','6','9'],answer:1,item:'Gate Cog'},
- {zone:'marsh',name:'Muddy Marsh',icon:'🌾',story:'A supply crate sank beside three stepping routes. The safe stones follow a number pattern.',question:'The safe stones are marked 3, 6, 12, 24... Which stone comes next?',choices:['30','36','48'],answer:2,item:'Bridge Rope'},
- {zone:'woods',name:'Whispering Woods',icon:'🌲',story:'The trail signs were twisted around. A scratched note from the wagon driver gives a navigation clue.',question:'Face north. Turn right, walk east, then turn left. Which direction are you facing now?',choices:['North','South','West'],answer:0,item:'Bridge Planks'},
- {zone:'bridge',name:'Broken Bridge',icon:'🌉',story:'You have rope and planks, but the bridge must hold Bunny and the recovered cargo.',question:'Four gaps each need 2 planks. You have 11 planks. How many will remain after the repair?',choices:['2','3','5'],answer:1,item:'River Crossing'},
- {zone:'crow',name:"Sneaky Crow's Nest",icon:'🐦‍⬛',story:'The crow stole the wagon key and hid it beneath one of three numbered nests.',question:'The clue says: “Not an even number. Greater than 3. Less than 7.” Which nest?',choices:['Nest 2','Nest 5','Nest 8'],answer:1,item:'Wagon Key'},
- {zone:'cave',name:'Echo Cave',icon:'🪨',story:'The wagon wheel pin rolled into Echo Cave. Three tunnels echo at different intervals.',question:'One echo repeats every 4 seconds and another every 6 seconds. After how many seconds will they echo together?',choices:['10','12','24'],answer:1,item:'Wheel Pin'},
- {zone:'wagon',name:'Lost Supply Wagon',icon:'🛞',story:'You reached the wagon—but reaching it is not enough. Use everything you recovered to repair it and secure the cargo.',question:'The wagon has 5 cargo straps. Two are damaged. How many good straps remain?',choices:['2','3','4'],answer:1,item:'Recovered Wagon'},
+type ItemId='cog'|'rope'|'planks'|'key'|'pin';
+type Spot={id:string;x:number;y:number;name:string;item?:ItemId;message:string;requires?:ItemId[];danger?:boolean};
+
+const spots:Spot[]=[
+ {id:'mill',x:20,y:24,name:'Old Windmill',item:'cog',message:'Behind the loose gear housing you recover the GATE COG.'},
+ {id:'marsh-crate',x:18,y:66,name:'Half-Sunken Crate',item:'rope',message:'Inside the muddy crate is a coil of BRIDGE ROPE.'},
+ {id:'woods-stack',x:39,y:76,name:'Fallen Timber',item:'planks',message:'Three straight boards can be salvaged as BRIDGE PLANKS.'},
+ {id:'bridge',x:50,y:58,name:'Broken Bridge',message:'You repair the bridge with your rope and planks. The far side is now reachable.',requires:['rope','planks']},
+ {id:'crow-tree',x:70,y:38,name:'Crow Tree',item:'key',message:'The crow hid the WAGON KEY in a hollow branch.',requires:['cog']},
+ {id:'cave',x:68,y:72,name:'Echo Cave',item:'pin',message:'You search the echoing tunnel and recover the missing WHEEL PIN.',requires:['rope','planks']},
+ {id:'berries',x:31,y:43,name:'Berry Patch',message:'Just berries. Bunny loses time checking the wrong place.',danger:true},
+ {id:'stump',x:57,y:31,name:'Old Stump',message:'Nothing but beetles under this stump.',danger:true},
+ {id:'pond',x:39,y:57,name:'Deep Pond Edge',message:'Too deep. Bunny backs away before getting soaked.',danger:true},
+ {id:'wagon',x:88,y:25,name:'Lost Supply Wagon',message:'You unlock and repair the wagon. The expedition is complete!',requires:['cog','rope','planks','key','pin']},
 ];
+const itemNames:Record<ItemId,string>={cog:'Gate Cog',rope:'Bridge Rope',planks:'Bridge Planks',key:'Wagon Key',pin:'Wheel Pin'};
+
 export default function QuestMeadow({coins,goalName,goalCost,onEarn,onBack,onGoStore}:Props){
- const[completed,setCompleted]=useState<Zone[]>([]);const[current,setCurrent]=useState<Zone|null>(null);const[lives,setLives]=useState(3);const[message,setMessage]=useState('');const[rewarded,setRewarded]=useState(false);
- const missing=Math.max(0,(goalCost||0)-coins);const goalReady=!!goalName&&!!goalCost&&missing===0;
- const available=(z:Zone)=>{if(z==='hill'||z==='marsh'||z==='woods')return true;if(z==='bridge')return completed.includes('marsh')&&completed.includes('woods');if(z==='crow')return completed.includes('hill')&&completed.includes('bridge');if(z==='cave')return completed.includes('bridge');if(z==='wagon')return completed.includes('crow')&&completed.includes('cave');return false};
- const questDone=completed.includes('wagon');const c=challenges.find(x=>x.zone===current);
- const title=useMemo(()=>goalReady?`You have enough for ${goalName}.`:`Expedition: earn ${missing||'more'} coin${missing===1?'':'s'} for ${goalName||'your next supply'}.`,[goalReady,goalName,missing]);
- function choose(i:number){if(!c)return;if(i===c.answer){setCompleted(v=>v.includes(c.zone)?v:[...v,c.zone]);setMessage(`Recovered: ${c.item}!`);setCurrent(null);setLives(3);return}setLives(v=>{const n=v-1;if(n<=0){setMessage('That route failed. Bunny returns to the trail marker and you can rethink the clue.');setCurrent(null);return 3}setMessage(`Not quite. ${n} attempt${n===1?'':'s'} left in this challenge.`);return n})}
- function claim(){if(rewarded)return;const reward=Math.max(4,Math.min(9,missing||6));onEarn(reward);setRewarded(true);setMessage(`Expedition complete! You earned ${reward} coins.`)}
- return <section className="adventure-meadow">
-  <header className="adventure-hud"><button onClick={onBack}>← BUNNYWOOD</button><div><small>QUEST MEADOW · STARTER CAMPAIGN</small><b>THE LOST SUPPLY WAGON</b></div><span>🪙 {coins}</span><span>❤️ {lives}</span></header>
-  <div className="adventure-banner"><div className="painted-bunny">🐇</div><div><small>BUNNY'S EXPEDITION</small><h1>{title}</h1><p>The wagon is visible in the distance, but you cannot simply run to it. Recover the bridge materials, open the trail gate, retrieve the stolen key, find the wheel pin, repair the wagon, and bring the expedition home.</p><div className="mission-tags"><span>🎯 {goalName||'Starter supplies'} {goalCost?`· ${goalCost} coins`:''}</span><span>🧭 {completed.length}/7 objectives</span><span>🎒 Required items cannot be skipped</span></div></div></div>
-  <div className="meadow-map">
-   <div className="map-landscape"><div className="mountains">▲　▲　▲</div><div className="river"/><div className="road r1"/><div className="road r2"/><div className="road r3"/><div className="wagon-goal">🛞<b>LOST WAGON</b><small>{available('wagon')?'FINAL REPAIR OPEN':'🔒 NEED KEY + WHEEL PIN'}</small></div><div className="start-flag">🏡<b>BUNNYWOOD TRAIL</b></div>
-    {challenges.slice(0,6).map((x,i)=><button key={x.zone} className={`map-zone z-${x.zone} ${completed.includes(x.zone)?'complete':available(x.zone)?'available':'locked'}`} disabled={!available(x.zone)||completed.includes(x.zone)} onClick={()=>{setCurrent(x.zone);setMessage('')}}><span>{completed.includes(x.zone)?'✓':available(x.zone)?x.icon:'🔒'}</span><b>{x.name}</b><small>{completed.includes(x.zone)?x.item:available(x.zone)?'ENTER CHALLENGE':'LOCKED'}</small></button>)}
-    <button className={`map-zone z-wagon ${completed.includes('wagon')?'complete':available('wagon')?'available':'locked'}`} disabled={!available('wagon')||completed.includes('wagon')} onClick={()=>{setCurrent('wagon');setMessage('')}}><span>{completed.includes('wagon')?'✓':available('wagon')?'🛞':'🔒'}</span><b>Lost Supply Wagon</b><small>{completed.includes('wagon')?'RECOVERED':available('wagon')?'REPAIR WAGON':'LOCKED'}</small></button>
+ const[pos,setPos]=useState({x:10,y:82});
+ const[inventory,setInventory]=useState<ItemId[]>([]);
+ const[searched,setSearched]=useState<string[]>([]);
+ const[hearts,setHearts]=useState(4);
+ const[message,setMessage]=useState('Bunny entered Quest Meadow. Explore the field, search suspicious places, and recover everything needed to reach the wagon.');
+ const[complete,setComplete]=useState(false);
+ const[rewarded,setRewarded]=useState(false);
+ const missing=Math.max(0,(goalCost||0)-coins);
+ const goalReady=!!goalName&&!!goalCost&&missing===0;
+ const near=useMemo(()=>spots.find(s=>Math.hypot(pos.x-s.x,pos.y-s.y)<8),[pos]);
+ const bridgeOpen=inventory.includes('rope')&&inventory.includes('planks');
+ const gateOpen=inventory.includes('cog');
+ const reward=Math.max(6,Math.min(12,missing||8));
+
+ function blocked(nx:number,ny:number){
+  if(!bridgeOpen&&nx>52&&ny>48)return 'The river blocks this route. Find what you need to repair the bridge.';
+  if(!gateOpen&&nx>60&&ny<48)return 'The old trail gate is locked. The windmill mechanism may hold the answer.';
+  return '';
+ }
+ function move(dx:number,dy:number){
+  if(complete)return;
+  setPos(p=>{const nx=Math.max(6,Math.min(94,p.x+dx));const ny=Math.max(14,Math.min(86,p.y+dy));const stop=blocked(nx,ny);if(stop){setMessage(stop);return p}return{x:nx,y:ny}})
+ }
+ useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if(['ArrowLeft','a','A'].includes(e.key))move(-3,0);else if(['ArrowRight','d','D'].includes(e.key))move(3,0);else if(['ArrowUp','w','W'].includes(e.key))move(0,-3);else if(['ArrowDown','s','S'].includes(e.key))move(0,3);else if((e.key==='Enter'||e.key===' ')&&near)search(near)};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)});
+ function search(s:Spot){
+  if(searched.includes(s.id)){setMessage(`You already searched ${s.name}.`);return}
+  if(s.requires&&!s.requires.every(x=>inventory.includes(x))){setMessage(`${s.name} is not ready yet. You are missing: ${s.requires.filter(x=>!inventory.includes(x)).map(x=>itemNames[x]).join(', ')}.`);return}
+  setSearched(v=>[...v,s.id]);
+  if(s.danger){setHearts(h=>Math.max(1,h-1));setMessage(`${s.message} ❤️ -1`);return}
+  if(s.item&&!inventory.includes(s.item))setInventory(v=>[...v,s.item!]);
+  if(s.id==='bridge'){setMessage(s.message);return}
+  if(s.id==='wagon'){setComplete(true);setMessage(s.message);return}
+  setMessage(s.message)
+ }
+ function claim(){if(rewarded)return;onEarn(reward);setRewarded(true)}
+ function restart(){setPos({x:10,y:82});setInventory([]);setSearched([]);setHearts(4);setMessage('A new expedition begins. Item locations stay familiar, but the challenge is reaching them in the right order.');setComplete(false);setRewarded(false)}
+ return <section className="qm-shell">
+  <header className="qm-hud"><button onClick={onBack}>← BUNNYWOOD</button><div><small>QUEST MEADOW · STARTER CAMPAIGN</small><b>THE LOST SUPPLY WAGON</b></div><span>🪙 {coins}</span><span>❤️ {hearts}</span></header>
+  <div className="qm-mission"><div><small>CURRENT COIN GOAL</small><h1>{goalReady?`You can afford ${goalName}.`:`Earn ${missing||'more'} coins for ${goalName||'your next starter supply'}.`}</h1><p>Recover the wagon by exploring the meadow. You cannot reach it by taking a shortcut: the river and locked upper trail force you to recover the necessary equipment first.</p></div><div className="qm-progress"><b>{inventory.length}/5</b><span>QUEST ITEMS</span></div></div>
+  <div className="qm-layout">
+   <div className="qm-world">
+    <div className="qm-mountains">▲　▲　▲</div><div className="qm-river"/><div className={`qm-bridge ${bridgeOpen?'open':''}`}>{bridgeOpen?'════':'╳ ╳ ╳'}</div><div className={`qm-gate ${gateOpen?'open':''}`}>{gateOpen?'OPEN GATE':'LOCKED GATE'}</div>
+    <div className="qm-path p1"/><div className="qm-path p2"/><div className="qm-path p3"/>
+    <button className="qm-object windmill" onClick={()=>setMessage('Move Bunny close to the windmill and search it.')}>⚙<small>WINDMILL</small></button>
+    <button className="qm-object marsh" onClick={()=>setMessage('Something is sticking out of the marsh.')}>▤<small>MARSH</small></button>
+    <button className="qm-object woods" onClick={()=>setMessage('The woods contain several places worth searching.')}>♣<small>WOODS</small></button>
+    <button className="qm-object cave" onClick={()=>setMessage('Echo Cave is across the river.')}>◒<small>CAVE</small></button>
+    <button className="qm-object crow" onClick={()=>setMessage('A crow is guarding something in the tree.')}>♠<small>CROW TREE</small></button>
+    <button className="qm-object wagon" onClick={()=>setMessage('The wagon is your final destination.')}>▣<small>LOST WAGON</small></button>
+    {spots.filter(s=>!['bridge','wagon'].includes(s.id)).map(s=><div key={s.id} className={`qm-hotspot ${searched.includes(s.id)?'searched':''}`} style={{left:`${s.x}%`,top:`${s.y}%`}} aria-hidden="true"/>) }
+    <div className="qm-player" style={{left:`${pos.x}%`,top:`${pos.y}%`}}><div className="qe l"><i/></div><div className="qe r"><i/></div><div className="qh"><i/><i/><b/></div><div className="qb">B</div></div>
+    <div className="qm-start">BUNNYWOOD TRAIL</div>
    </div>
-   <aside className="quest-journal"><small>EXPEDITION JOURNAL</small><h2>Required Objectives</h2>{challenges.map(x=><div key={x.zone} className={completed.includes(x.zone)?'done':available(x.zone)?'open':'locked'}><span>{completed.includes(x.zone)?'✓':available(x.zone)?'◆':'🔒'}</span><p><b>{x.name}</b><small>{completed.includes(x.zone)?x.item:available(x.zone)?'Ready to explore':'Complete earlier objectives'}</small></p></div>)}<p className="journal-note">You may choose the first branches in different orders, but every required quest item must be recovered before the wagon can leave.</p></aside>
+   <aside className="qm-journal"><small>EXPEDITION JOURNAL</small><h2>Repair the Wagon</h2>{(['cog','rope','planks','key','pin'] as ItemId[]).map(i=><div key={i} className={inventory.includes(i)?'done':''}><span>{inventory.includes(i)?'✓':'□'}</span><b>{itemNames[i]}</b></div>)}<hr/><p><b>Search nearby objects.</b> Not every search helps. Wrong places cost a heart.</p><p>The bridge requires <b>rope + planks</b>. The upper trail requires the <b>gate cog</b>. The wagon needs all five quest items.</p></aside>
   </div>
-  {message&&<div className="quest-message">{message}</div>}
-  {c&&<div className="challenge-overlay"><div className="challenge-card"><button className="close-challenge" onClick={()=>setCurrent(null)}>×</button><span className="challenge-icon">{c.icon}</span><small>{c.name.toUpperCase()}</small><h2>{c.story}</h2><p>{c.question}</p><div className="challenge-choices">{c.choices.map((x,i)=><button key={x} onClick={()=>choose(i)}>{x}</button>)}</div><strong>❤️ {lives} · Think before choosing. Wrong routes cost an attempt.</strong></div></div>}
-  {questDone&&!rewarded&&<div className="quest-complete"><span>🏅</span><div><small>EXPEDITION COMPLETE</small><h2>The Lost Supply Wagon is safe!</h2><p>You completed every required branch. Claim your expedition pay, then continue working toward the current shopping item.</p><button onClick={claim}>🪙 CLAIM EXPEDITION COINS</button></div></div>}
-  {rewarded&&<div className="quest-complete"><span>🐇</span><div><small>BACK AT THE TRAILHEAD</small><h2>{goalReady?'Time to shop!':'Good work. The next expedition can earn more.'}</h2><p>{goalReady?`You now have enough coins for ${goalName}.`:`You still need ${Math.max(0,(goalCost||0)-coins)} coins. Quest Meadow will continue offering expeditions as Bunnywood grows.`}</p>{goalReady?<button onClick={onGoStore}>🛒 GO BUY {goalName?.toUpperCase()} →</button>:<button onClick={()=>{setCompleted([]);setRewarded(false);setMessage('A new expedition has begun. The challenges will become more varied as we build Quest Meadow out.')}}>🧭 START ANOTHER EXPEDITION</button>}</div></div>}
+  <div className="qm-console"><div><small>BUNNY SAYS</small><p>{message}</p>{near&&!complete&&<button onClick={()=>search(near)}>🔎 SEARCH {near.name.toUpperCase()}</button>}</div><div className="qm-controls"><button onClick={()=>move(0,-4)}>▲</button><div><button onClick={()=>move(-4,0)}>◀</button><button onClick={()=>move(0,4)}>▼</button><button onClick={()=>move(4,0)}>▶</button></div><small>ARROWS / WASD</small></div></div>
+  {complete&&<div className="qm-win"><span>🏅</span><div><small>EXPEDITION COMPLETE</small><h2>The Lost Supply Wagon is recovered.</h2><p>You earned expedition pay because you solved the route, recovered the required equipment, repaired the crossings, and reached the wagon.</p>{!rewarded?<button onClick={claim}>🪙 CLAIM {reward} COINS</button>:goalReady?<button onClick={onGoStore}>🛒 GO BUY {goalName?.toUpperCase()} →</button>:<button onClick={restart}>🧭 START ANOTHER EXPEDITION</button>}</div></div>}
  </section>
 }
