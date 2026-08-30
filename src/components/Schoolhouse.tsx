@@ -1,32 +1,26 @@
 import { useState } from 'react';
 import { starterSupplies } from '../data/game';
-
 type Props={completed:boolean;onComplete:()=>void;onBack:()=>void;onQuest:()=>void};
-const lessons=[
- {title:'What is a starter?',text:'A sourdough starter is a living culture of flour, water, wild yeast, and helpful bacteria. We feed it and watch how it changes.',icon:'🫙'},
- {title:'What do we need?',text:'A good setup makes learning easier. We need ingredients for the starter and tools that help us measure, mix, observe, and care for it.',icon:'⚖️'},
- {title:'Why these supplies?',text:'Every item has a job. Learning those jobs now will help you make better decisions later when your starter begins changing.',icon:'🌡️'},
-] as const;
+const stations=[
+ {title:'Meet the Starter',prompt:'Tap the jar and inspect what makes a starter alive.',icon:'🫙',facts:['Flour provides food','Filtered water hydrates the flour','Wild yeast and helpful bacteria form the culture'],check:'A starter is a living culture we feed and observe.'},
+ {title:'Build the Starter Kit',prompt:'Open the cupboard and discover the tools Bunny wants packed.',icon:'🧰',facts:['A gram scale makes measurements repeatable','A clear jar lets us see bubbles and rise','A thermometer helps explain fermentation speed'],check:'Good tools help us measure changes instead of guessing.'},
+ {title:'Read the Clues',prompt:'Check Bunny’s observation board before leaving for town.',icon:'🔎',facts:['Rise shows expansion','Bubbles show gas production','Aroma, time, and temperature add context'],check:'Bakers combine several clues before making a decision.'}
+];
 export default function Schoolhouse({completed,onComplete,onBack,onQuest}:Props){
- const [step,setStep]=useState(completed?3:0);
- const [openItem,setOpenItem]=useState<string|null>(null);
- const lesson=lessons[Math.min(step,2)];
- return <section className="school-place">
-  <div className="school-scene">
-   <div className="school-room-art simple-classroom">
-    <div className="class-window">☀️</div>
-    <div className="class-board"><small>STARTER SCHOOL</small><b>LEARN → EARN → SHOP → MAKE</b></div>
-    <div className="class-desks"><i/><i/><i/><i/></div>
-    <div className="class-bunny">🐇</div>
-   </div>
+ const[station,setStation]=useState(0);const[revealed,setRevealed]=useState<number[]>([]);const[openItem,setOpenItem]=useState<string|null>(null);const s=stations[station];
+ const reveal=(i:number)=>setRevealed(v=>v.includes(i)?v:[...v,i]);const stationReady=revealed.length===3;
+ function next(){if(station<2){setStation(x=>x+1);setRevealed([])}else onComplete()}
+ return <section className="school-place redesigned-school">
+  <div className="school-world">
    <button className="school-back" onClick={onBack}>← BUNNYWOOD</button>
-   <div className="school-dialogue"><small>BUNNY'S LESSON</small><h1>{completed?'Starter School: Shopping List':lesson.title}</h1><p>{completed?'You passed the first lesson. Your starter shopping list is unlocked. Tap any item to review why we need it.':lesson.text}</p></div>
+   <div className="school-title"><small>BUNNYWOOD SCHOOLHOUSE</small><h1>Starter School</h1><p>{completed?'Starter Apprentice · Shopping Mission Unlocked':`Learning Station ${station+1} of 3`}</p></div>
+   <div className="classroom-window"><div className="sun">☀</div><div className="hill-one"/><div className="hill-two"/></div>
+   <div className="chalkboard"><small>STARTER ADVENTURE</small><b>{completed?'LEARN ✓  →  EARN  →  SHOP  →  MAKE':s.title}</b><p>{completed?'You know what your starter needs. Now gather the supplies.':s.prompt}</p></div>
+   <div className="wood-shelf"><span>🌾</span><span>💧</span><span>⚖️</span><span>🌡️</span></div>
+   <div className="school-bunny-character"><div className="bunny-ears">◯ ◯</div><div className="bunny-head">• ᴥ •</div><div className="bunny-body">B</div></div>
+   {!completed&&<div className="learning-table"><div className="station-object">{s.icon}</div><div className="discovery-buttons">{s.facts.map((f,i)=><button key={f} className={revealed.includes(i)?'discovered':''} onClick={()=>reveal(i)}><span>{revealed.includes(i)?'✓':'?'}</span>{revealed.includes(i)?f:'INSPECT'}</button>)}</div></div>}
+   <div className="bunny-speech"><small>BUNNY SAYS</small><h2>{completed?'You’re ready for your first Bunnywood mission!':s.title}</h2><p>{completed?'We need ingredients and equipment before we can make our starter. Quest Meadow is how we earn our first coins.':stationReady?s.check:'Explore all three clues. I’ll explain what you discover, but you do the investigating.'}</p>{!completed&&stationReady&&<button onClick={next}>{station===2?'🏅 COMPLETE STARTER SCHOOL':'NEXT LEARNING STATION →'}</button>}{completed&&<button onClick={onQuest}>🗺️ BEGIN QUEST MEADOW →</button>}</div>
   </div>
-  {!completed&&step<3&&<div className="lesson-path">
-   <div className="lesson-progress"><span style={{width:`${((step+1)/3)*100}%`}}/></div>
-   <div className="lesson-visual"><div className="lesson-object"><span style={{fontSize:90}}>{lesson.icon}</span></div><div className="lesson-copy"><small>LESSON {step+1} OF 3</small><h2>{lesson.title}</h2><p>{lesson.text}</p><button onClick={()=>setStep(s=>s+1)}>{step===2?'SHOW MY SHOPPING LIST →':'CONTINUE →'}</button></div></div>
-  </div>}
-  {!completed&&step>=3&&<div className="shopping-lesson"><div className="shopping-title"><small>STARTER SCHOOL · FINAL ACTIVITY</small><h2>Meet Your Starter Shopping List</h2><p>Tap every item and learn its job. When you are ready, unlock the list and begin earning coins.</p></div><div className="school-supply-grid">{starterSupplies.map(s=><button key={s.id} className={openItem===s.id?'open':''} onClick={()=>setOpenItem(openItem===s.id?null:s.id)}><span>{s.emoji}</span><b>{s.name}</b><small>{openItem===s.id?s.teaching:`Costs ${s.cost} coins`}</small></button>)}</div><button className="unlock-list" onClick={onComplete}>🏅 COMPLETE STARTER SCHOOL & UNLOCK SHOPPING LIST</button></div>}
-  {completed&&<div className="shopping-lesson"><div className="shopping-title"><small>STARTER APPRENTICE</small><h2>Your Shopping Mission</h2><p>You know what the starter needs. Now earn coins in Quest Meadow and buy the supplies from the Grocery Store and Supply Shop.</p></div><div className="school-supply-grid compact">{starterSupplies.map(s=><button key={s.id} className={openItem===s.id?'open':''} onClick={()=>setOpenItem(openItem===s.id?null:s.id)}><span>{s.emoji}</span><b>{s.name}</b><small>{openItem===s.id?s.teaching:`🪙 ${s.cost}`}</small></button>)}</div><button className="unlock-list" onClick={onQuest}>🗺️ GO TO QUEST MEADOW →</button></div>}
+  {completed&&<div className="school-mission-board"><div><small>YOUR STARTER KIT</small><h2>Shopping Mission</h2><p>Tap an item to remember why it matters. You’ll buy ingredients at the Grocery Store and equipment at the Supply Shop.</p></div><div className="mission-supplies">{starterSupplies.map(x=><button key={x.id} onClick={()=>setOpenItem(openItem===x.id?null:x.id)} className={openItem===x.id?'open':''}><span>{x.emoji}</span><b>{x.name}</b><small>{openItem===x.id?x.teaching:`🪙 ${x.cost}`}</small></button>)}</div></div>}
  </section>;
 }
