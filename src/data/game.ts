@@ -1,6 +1,7 @@
 export type ChapterId = 'starter' | 'loaf' | 'home' | 'town' | 'company';
 export type ShopId = 'grocery' | 'supply';
 export type Supply = { id:string; name:string; emoji:string; cost:number; shop:ShopId; teaching:string; };
+export type FlourOption = { id:string; name:string; emoji:string; cost:number; teaching:string; recommended?:boolean; glutenFree?:boolean; };
 export const chapters=[
  {id:'starter' as ChapterId,icon:'🌱',title:'Raise Your Starter',summary:'Learn the setup, earn the coins, buy the supplies, make a starter, feed it, and prove it is mature.'},
  {id:'loaf' as ChapterId,icon:'🥖',title:'Bake Your First Loaf',summary:'Learn the real sourdough bread process from active starter to cooled loaf.'},
@@ -8,8 +9,14 @@ export const chapters=[
  {id:'town' as ChapterId,icon:'🏪',title:'Open Bunnywood Bakery',summary:'Move into town and run a growing bakery.'},
  {id:'company' as ChapterId,icon:'🏢',title:'Build the Bakery Company',summary:'Scale production and grow beyond Bunnywood.'},
 ];
+export const flourOptions:FlourOption[]=[
+ {id:'brown-rice-flour',name:'Brown Rice Flour',emoji:'🌾',cost:8,recommended:true,glutenFree:true,teaching:'Bunnywood Co. recommends brown rice flour for a brand-new starter. It is the flour used in our main teaching path and can remain gluten-free if you continue feeding with gluten-free flour.'},
+ {id:'whole-wheat-flour',name:'Whole Wheat Flour',emoji:'🌾',cost:7,teaching:'Whole wheat flour contains the bran and germ and can support an active starter. It is not gluten-free.'},
+ {id:'rye-flour',name:'Rye Flour',emoji:'🌾',cost:9,teaching:'Rye flour is nutrient-rich and is often used by sourdough bakers to encourage fermentation activity. It contains gluten-related proteins and is not a gluten-free choice.'},
+ {id:'organic-ap-flour',name:'Organic All-Purpose Flour',emoji:'🌾',cost:7,teaching:'Organic all-purpose flour can be used for starter feeding. Bunnywood’s main path transitions to organic all-purpose flour after the brown-rice starter is established.'},
+ {id:'bread-flour',name:'Bread Flour',emoji:'🌾',cost:9,teaching:'Bread flour can maintain a wheat starter and has more protein than typical all-purpose flour. It is especially useful later for bread dough.'}
+];
 export const starterSupplies:Supply[]=[
- {id:'flour',name:'Brown Rice Flour',emoji:'🌾',cost:8,shop:'grocery',teaching:'Brown rice flour is the food we use to get the new starter established.'},
  {id:'water',name:'Filtered Water',emoji:'💧',cost:6,shop:'grocery',teaching:'Filtered drinking water gives the starter water without relying on strongly chlorinated tap water.'},
  {id:'jar',name:'Clear Glass Jar',emoji:'🫙',cost:10,shop:'supply',teaching:'A clear jar lets us see bubbles, texture, and exactly how high the starter rises.'},
  {id:'scale',name:'Digital Gram Scale',emoji:'⚖️',cost:14,shop:'supply',teaching:'A gram scale lets us feed the starter accurately and repeat the same ratio.'},
