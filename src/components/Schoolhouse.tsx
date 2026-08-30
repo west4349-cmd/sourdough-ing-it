@@ -1,48 +1,93 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { starterSupplies } from '../data/game';
 
 type Props={completed:boolean;onComplete:()=>void;onBack:()=>void;onQuest:()=>void};
-type Spot={id:string;x:number;y:number;name:string;fact:string;decoy?:boolean};
-const missions=[
- {title:'Meet the Starter',brief:'Find three hidden starter clue cards. Search drawers, shelves, containers, and anything that looks out of place.',spots:[
-  {id:'drawer',x:73,y:48,name:'Desk Drawer',fact:'You found the FOOD card. Brown rice flour gives the new starter food.'},
-  {id:'rock',x:84,y:76,name:'Loose Rock',fact:'You found the WATER card tucked under the rock. We will use filtered water.'},
-  {id:'cabinet',x:42,y:31,name:'Glass Cabinet',fact:'You found the HOME card behind the books. A clear glass jar lets us watch bubbles and rise.'},
-  {id:'basket',x:19,y:63,name:'Basket',fact:'Old towels. Nothing useful here.',decoy:true},
-  {id:'plant',x:91,y:30,name:'Plant Pot',fact:'Just potting soil. Keep searching.',decoy:true}
- ]},
- {title:'Tools & Measure',brief:'Bunny hid three tool tokens around the room. Find the tools that help a baker measure instead of guess.',spots:[
-  {id:'chest',x:23,y:72,name:'Wooden Chest',fact:'GRAM SCALE token! Weight in grams makes feeding repeatable.'},
-  {id:'shelf',x:63,y:28,name:'High Shelf',fact:'THERMOMETER token! Temperature helps explain fermentation speed.'},
-  {id:'rug',x:57,y:75,name:'Edge of Rug',fact:'LEVEL MARKER token! Marking the starting height lets us measure rise.'},
-  {id:'drawer2',x:73,y:48,name:'Desk Drawer',fact:'Pencils and chalk. No tool token.',decoy:true},
-  {id:'rock2',x:84,y:76,name:'Loose Rock',fact:'Nothing under the rock this time.',decoy:true}
- ]},
- {title:'Read the Clues',brief:'Now use the classroom like a baker. Find three places that reveal evidence about a starter.',spots:[
-  {id:'jar',x:52,y:51,name:'Starter Jar',fact:'BUBBLES: gas pockets are one sign of fermentation.'},
-  {id:'mark',x:52,y:59,name:'Jar Rise Mark',fact:'RISE: compare the starter to its starting line to see expansion.'},
-  {id:'clock',x:64,y:18,name:'Wall Clock',fact:'TIME + TEMPERATURE: these give context to the bubbles and rise you observe.'},
-  {id:'books',x:42,y:31,name:'Books',fact:'Interesting reading, but not one of today’s three evidence clues.',decoy:true},
-  {id:'basket2',x:19,y:63,name:'Basket',fact:'No clue here. Try observing the starter and the room conditions.',decoy:true}
- ]}
-] as const;
+
+type Lesson={
+ id:string;
+ title:string;
+ subtitle:string;
+ icon:string;
+ pages:{heading:string;body:string;points:string[]}[];
+ check:{question:string;choices:string[];answer:number;explain:string};
+};
+
+const lessons:Lesson[]=[
+ {
+  id:'starter-basics',title:'What Is a Starter?',subtitle:'Meet the living culture',icon:'🫙',
+  pages:[
+   {heading:'A living culture',body:'A sourdough starter is flour and water that supports wild yeast and helpful bacteria. Those microorganisms ferment the mixture and eventually help bread rise.',points:['It is alive and changes over time.','It needs regular food and water.','Bubbles, rise, aroma, time, and temperature give us clues about how it is doing.']},
+   {heading:'Why we begin with brown rice flour',body:'For this Bunnywood method, the new starter begins with brown rice flour. Once the starter is established, a player who wants to remain gluten-free can continue with rice flour. In our main path, we later transition to organic all-purpose flour.',points:['Brown rice flour starts our culture.','Filtered water is used for hydration.','Later flour choices depend on the baker’s goal.']}
+  ],
+  check:{question:'Which statement best describes a sourdough starter?',choices:['A living culture we feed and observe','A packet of commercial yeast','Bread dough that is already baked'],answer:0,explain:'Correct. A starter is a living culture that changes as yeast and bacteria ferment flour and water.'}
+ },
+ {
+  id:'shopping',title:'Starter Shopping List',subtitle:'Know what you need before earning coins',icon:'🧺',
+  pages:[
+   {heading:'Ingredients',body:'Before the player goes to Quest Meadow to earn coins, Bunny teaches exactly what the starter project requires.',points:['Brown rice flour — the starter’s food.','Filtered water — hydrates the flour.']},
+   {heading:'Equipment',body:'The tools are not decorations. Each one helps the player measure, mix, observe, and care for the culture.',points:['Clear glass jar — see bubbles and rise.','Digital gram scale — measure accurately.','Mixing bowl — weigh and combine ingredients.','Danish dough whisk — mix thick starter and later dough.','Silicone spatula — scrape the jar clean.','Digital thermometer — understand temperature.','Timer — track observation and feeding windows.','Starter level marker — compare rise to the starting level.']}
+  ],
+  check:{question:'Why do we use a clear jar?',choices:['So we can see bubbles and rise','Because dark jars make starter sweeter','Only because clear jars cost fewer coins'],answer:0,explain:'Exactly. A clear jar makes the starter easier to observe.'}
+ },
+ {
+  id:'measure',title:'Measure, Don’t Guess',subtitle:'Learn the tools',icon:'⚖️',
+  pages:[
+   {heading:'Use grams',body:'Sourdough becomes easier to understand when measurements are repeatable. A digital scale lets the player measure flour and water by weight instead of guessing by volume.',points:['Place the container on the scale.','Tare the scale back to zero.','Add the ingredient until the target gram weight is reached.']},
+   {heading:'Temperature matters',body:'Fermentation usually moves faster when warmer and slower when cooler. Temperature does not replace observation; it helps explain what the player sees.',points:['Record room or starter temperature.','Compare temperature with time, bubbles, and rise.','Do not judge the starter from a single clue.']}
+  ],
+  check:{question:'What does “tare” mean on the scale?',choices:['Reset the displayed weight to zero','Heat the flour','Measure the jar temperature'],answer:0,explain:'Right. Taring lets us ignore the container weight and measure only the ingredient.'}
+ },
+ {
+  id:'make',title:'How We Make the Starter',subtitle:'Learn the sequence before going to the cottage',icon:'🥣',
+  pages:[
+   {heading:'The first mixture',body:'At Starter Cottage, Bunny will guide the player through the real hands-on sequence. Schoolhouse teaches the order first so the player understands what they are doing.',points:['Set up a clean work area.','Weigh the brown rice flour.','Weigh the filtered water.','Mix until no dry flour remains.','Transfer to the clear jar and clean the sides.','Mark the starting level.']},
+   {heading:'Then we observe',body:'After mixing, the job changes from making to observing. The starter needs time to begin fermenting.',points:['Watch for bubbles.','Watch for changes in rise.','Notice aroma changes.','Track time and temperature.','Do not panic over one quiet period.']}
+  ],
+  check:{question:'After the starter is mixed and marked, what should the player do next?',choices:['Observe it over time','Keep adding flour every few minutes','Bake it immediately'],answer:0,explain:'Correct. Once the mixture is set up, observation becomes the next job.'}
+ },
+ {
+  id:'care',title:'How to Read a Starter',subtitle:'Learn the signs of activity',icon:'🔎',
+  pages:[
+   {heading:'Look at several clues together',body:'A good baker does not make a decision from a single bubble or a single hour on the clock.',points:['Rise — how much has the starter expanded?','Bubbles — where are they and how many are there?','Aroma — how is it changing?','Time — how long since the last feeding?','Temperature — could conditions explain faster or slower activity?']},
+   {heading:'Young starters change pace',body:'A new starter may become active, become quieter, and then strengthen again. The player learns to care for the trend instead of assuming one quiet day means failure.',points:['One burst of activity does not prove maturity.','One quiet period does not prove the starter is dead.','Repeated, predictable strength is the goal.']}
+  ],
+  check:{question:'What is the best way to judge a starter?',choices:['Compare several clues over time','Look only at the clock','Look for exactly one bubble'],answer:0,explain:'Yes. Rise, bubbles, aroma, time, and temperature work together.'}
+ }
+];
 
 export default function Schoolhouse({completed,onComplete,onBack,onQuest}:Props){
- const[mission,setMission]=useState(0);const[found,setFound]=useState<string[]>([]);const[pos,setPos]=useState({x:15,y:78});const[message,setMessage]=useState('Use the arrow keys or controls to move Bunny. When SEARCH appears, investigate.');const[openItem,setOpenItem]=useState<string|null>(null);const m=missions[mission];
- const near=useMemo(()=>m.spots.find(s=>Math.hypot(pos.x-s.x,pos.y-s.y)<10),[m.spots,pos]);
- const realFound=m.spots.filter(s=>!s.decoy&&found.includes(s.id)).length;const ready=realFound===3;
- function move(dx:number,dy:number){setPos(p=>({x:Math.max(8,Math.min(92,p.x+dx)),y:Math.max(18,Math.min(82,p.y+dy))}))}
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(['ArrowLeft','a','A'].includes(e.key))move(-4,0);if(['ArrowRight','d','D'].includes(e.key))move(4,0);if(['ArrowUp','w','W'].includes(e.key))move(0,-4);if(['ArrowDown','s','S'].includes(e.key))move(0,4);if((e.key==='Enter'||e.key===' ')&&near)search()};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)});
- function search(){if(!near){setMessage('Nothing close enough to search. Move Bunny nearer to an object.');return}setMessage(near.fact);if(!near.decoy)setFound(v=>v.includes(near.id)?v:[...v,near.id])}
- function next(){if(!ready)return;if(mission<2){setMission(x=>x+1);setFound([]);setPos({x:15,y:78});setMessage('New challenge! Move around and search for three new clues.')}else onComplete()}
- return <section className="school-game"><header className="school-game-hud"><button onClick={onBack}>← BUNNYWOOD</button><div><small>BUNNYWOOD SCHOOLHOUSE</small><b>STARTER SCHOOL · {completed?'MISSION COMPLETE':`DISCOVERY ${mission+1}/3`}</b></div><span>🔎 {completed?'✓':`${realFound}/3`}</span></header>
-  {!completed?<><div className="school-game-world"><div className="room-window"><i/></div><div className="room-board"><small>{m.title.toUpperCase()}</small><b>{m.brief}</b></div><div className="room-shelf"><i/><i/><i/><i/></div><div className="room-cabinet"><span>BOOKS</span></div><div className="room-desk"><div className="desk-drawer">▰</div></div><div className="room-rug"/><div className="room-rock">●</div><div className="room-basket">▥</div><div className="room-plant">♣</div><div className="room-clock">◷</div><div className="room-table"><div className="room-jar"><i/><span>START</span></div><div className="room-bowl">◡</div><div className="room-scale">⚖</div></div>
-   <div className="player-bunny" style={{left:`${pos.x}%`,top:`${pos.y}%`}}><div className="pb-ear l"><i/></div><div className="pb-ear r"><i/></div><div className="pb-head"><i className="pb-eye e1"/><i className="pb-eye e2"/><i className="pb-nose"/></div><div className="pb-body"><b>B</b></div></div>
-   {found.map(id=>{const s=m.spots.find(x=>x.id===id)!;return <div key={id} className="found-spark" style={{left:`${s.x}%`,top:`${s.y}%`}}>✓</div>})}
-   <div className="search-zone"><small>BUNNY SAYS</small><p>{message}</p>{near&&<button onClick={search}>🔎 SEARCH {near.name.toUpperCase()}</button>}{ready&&<button className="next-discovery" onClick={next}>{mission===2?'🏅 COMPLETE STARTER SCHOOL':'NEXT DISCOVERY →'}</button>}</div>
-   <div className="move-controls"><button onClick={()=>move(0,-5)}>▲</button><div><button onClick={()=>move(-5,0)}>◀</button><button onClick={()=>move(0,5)}>▼</button><button onClick={()=>move(5,0)}>▶</button></div><small>ARROWS / WASD</small></div>
-   <div className="mission-counter"><b>{realFound}/3</b><span>{m.spots.filter(s=>!s.decoy).map(s=><i key={s.id} className={found.includes(s.id)?'done':''}/>)}</span></div>
-  </div></>:<div className="school-complete-world"><div className="graduate-bunny">🐇</div><div><small>STARTER APPRENTICE</small><h1>You completed Starter School.</h1><p>Now the knowledge has a purpose: earn coins in Quest Meadow, buy the starter kit, then return to Starter Cottage and make the culture yourself.</p><button onClick={onQuest}>🗺️ BEGIN THE LOST SUPPLY WAGON QUEST →</button></div></div>}
-  {completed&&<div className="school-mission-board"><div><small>MISSION INVENTORY</small><h2>Your Starter Kit</h2><p>Tap an item for Bunny’s reminder while you earn and shop.</p></div><div className="mission-supplies">{starterSupplies.map(x=><button key={x.id} onClick={()=>setOpenItem(openItem===x.id?null:x.id)} className={openItem===x.id?'open':''}><span>{x.emoji}</span><b>{x.name}</b><small>{openItem===x.id?x.teaching:`🪙 ${x.cost} · ${x.shop==='grocery'?'GROCERY':'SUPPLY SHOP'}`}</small></button>)}</div></div>}
+ const[lessonIndex,setLessonIndex]=useState(0);
+ const[page,setPage]=useState(0);
+ const[passed,setPassed]=useState<string[]>(completed?lessons.map(l=>l.id):[]);
+ const[selected,setSelected]=useState<number|null>(null);
+ const[feedback,setFeedback]=useState('');
+ const[openItem,setOpenItem]=useState<string|null>(null);
+ const lesson=lessons[lessonIndex];
+ const allPassed=passed.length===lessons.length;
+ const progress=useMemo(()=>Math.round((passed.length/lessons.length)*100),[passed.length]);
+ function choose(i:number){setSelected(i);if(i===lesson.check.answer){setFeedback(lesson.check.explain);setPassed(v=>v.includes(lesson.id)?v:[...v,lesson.id])}else setFeedback('Not quite. Review the lesson and try again.')}
+ function changeLesson(i:number){setLessonIndex(i);setPage(0);setSelected(null);setFeedback('')}
+ function finishCourse(){if(!allPassed)return;onComplete()}
+ return <section className="redesigned-school">
+  <div className="school-world">
+   <button className="school-back" onClick={onBack}>← BUNNYWOOD</button>
+   <div className="school-title"><small>BUNNYWOOD SCHOOLHOUSE</small><h1>Sourdough School</h1><p>{completed?'STARTER COURSE COMPLETE':`STARTER COURSE · ${progress}%`}</p></div>
+   <div className="classroom-window"><span className="sun">☀</span><i className="hill-one"/><i className="hill-two"/></div>
+   <div className="chalkboard"><small>{lesson.subtitle.toUpperCase()}</small><b>{lesson.title}</b><p>The Schoolhouse is where Bunny teaches the facts, methods, vocabulary, and reasons behind each step before the player uses them elsewhere in Bunnywood.</p></div>
+   <div className="wood-shelf"><span>🌾</span><span>💧</span><span>⚖️</span><span>🌡️</span></div>
+   <div className="school-bunny-character"><div className="ear left"><i/></div><div className="ear right"><i/></div><div className="bunny-head"><span className="eye e1"/><span className="eye e2"/><span className="nose"/><span className="mouth"/></div><div className="bunny-body"><span className="overall-pocket">B</span></div></div>
+   <div className="learning-table" style={{gridTemplateColumns:'1fr',overflow:'auto'}}>
+    <div style={{background:'#fff2cd',border:'5px solid #704a31',borderRadius:16,padding:14,minHeight:235}}>
+     <small>PAGE {page+1} OF {lesson.pages.length}</small>
+     <h2 style={{margin:'5px 0 8px'}}>{lesson.pages[page].heading}</h2>
+     <p style={{fontSize:13,lineHeight:1.4}}>{lesson.pages[page].body}</p>
+     <ul style={{fontSize:12,lineHeight:1.45,paddingLeft:20}}>{lesson.pages[page].points.map(x=><li key={x}>{x}</li>)}</ul>
+     <div style={{display:'flex',gap:8}}>{page>0&&<button onClick={()=>setPage(p=>p-1)}>← BACK</button>}{page<lesson.pages.length-1&&<button onClick={()=>setPage(p=>p+1)}>NEXT PAGE →</button>}</div>
+    </div>
+   </div>
+   <div className="bunny-speech"><small>BUNNY TEACHES</small><h2>{passed.includes(lesson.id)?'Lesson Passed ✓':'Knowledge Check'}</h2><p>{lesson.check.question}</p>{lesson.check.choices.map((x,i)=><button key={x} style={{marginBottom:6,background:selected===i?(i===lesson.check.answer?'#397846':'#9b4d3c'):'#6d4c32'}} onClick={()=>choose(i)}>{x}</button>)}{feedback&&<p><b>{feedback}</b></p>}</div>
+  </div>
+  <div className="school-mission-board"><div><small>SOURDOUGH SCHOOL · STARTER COURSE</small><h2>Choose a lesson</h2><p>Players can return here anytime to review what they have learned.</p></div><div className="mission-supplies">{lessons.map((l,i)=><button key={l.id} className={lessonIndex===i?'open':''} onClick={()=>changeLesson(i)}><span>{l.icon}</span><b>{l.title}</b><small>{passed.includes(l.id)?'✓ LESSON PASSED':l.subtitle}</small></button>)}</div>{allPassed&&!completed&&<button className="mission-launch" onClick={finishCourse}>🏅 COMPLETE STARTER COURSE & UNLOCK SHOPPING MISSION</button>}{completed&&<><h3>Your Starter Shopping List</h3><div className="mission-supplies">{starterSupplies.map(x=><button key={x.id} onClick={()=>setOpenItem(openItem===x.id?null:x.id)} className={openItem===x.id?'open':''}><span>{x.emoji}</span><b>{x.name}</b><small>{openItem===x.id?x.teaching:`🪙 ${x.cost} · ${x.shop==='grocery'?'GROCERY':'SUPPLY SHOP'}`}</small></button>)}</div><button className="mission-launch" onClick={onQuest}>🗺️ GO TO QUEST MEADOW TO EARN COINS →</button></>}
+  </div>
  </section>;
 }
