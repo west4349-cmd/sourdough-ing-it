@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './starter-mission.css';
+import './bunny-character.css';
 import BunnyGuide from './components/BunnyGuide';
 import QuestMeadow from './components/QuestMeadow';
 import Schoolhouse from './components/Schoolhouse';
