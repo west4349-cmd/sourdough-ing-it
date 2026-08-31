@@ -9,7 +9,7 @@ export default function BunnyGuide({ eyebrow, title, text, button, onClick, seco
 }) {
   return (
     <section className="bunny-guide">
-      <div className="bunny-face">🐇</div>
+      <div className="bunny-face bunny-face-girl"><img src="./resources/bunny-explorer.png" alt="Bunny" /></div>
       <div className="bunny-copy">
         <small>{eyebrow}</small>
         <h2>{title}</h2>
