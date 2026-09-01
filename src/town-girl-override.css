@@ -1,1 +1,1 @@
-.town-master{aspect-ratio:2/3;background-image:url('./resources/bunnywood-main-girl-final-v1.png');background-size:100% 100%;background-repeat:no-repeat;background-position:top center}.town-master picture{display:none}
+.town-master{background:none}.town-master picture{display:block;background:url('/resources/bunnywood-main-girl-final-v1.png') top center/100% 100% no-repeat}.town-master picture img{display:block;width:100%;height:auto;visibility:hidden}
