@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
-type Mission={title:string;rule:string;targets:{label:string,value:number}[];goal:number;mode:'sum'|'exact'|'range'};
+type Mission={title:string;rule:string;targets:{label:string;value:number}[];goal:number;mode:'sum'|'exact'|'range'};
 const missions:Mission[]=[
- {title:'Build the Feed',rule:'Catch ingredient cards whose gram values add to exactly 120 g. Going over costs a life.',targets:[{label:'Rice flour',value:25},{label:'Pure water',value:35},{label:'Rice flour',value:45},{label:'Pure water',value:55},{label:'Rice flour',value:60},{label:'Pure water',value:75}],goal:120,mode:'sum'},
- {title:'Hit the Ratio',rule:'Catch exactly 90 g total. Think before you move—the values are mixed and every extra gram matters.',targets:[{label:'Flour',value:20},{label:'Water',value:30},{label:'Flour',value:40},{label:'Water',value:50},{label:'Flour',value:60},{label:'Water',value:70}],goal:90,mode:'sum'},
- {title:'Scale Calibration',rule:'Catch only cards that read exactly 50 g. Wrong measurements cost a life.',targets:[{label:'Flour',value:45},{label:'Water',value:50},{label:'Starter',value:55},{label:'Flour',value:50},{label:'Water',value:60},{label:'Starter',value:50}],goal:50,mode:'exact'},
+ {title:'Build the Feed',rule:'Catch ingredient cards whose gram values add to exactly 120 g. Going over costs a life.',targets:[{label:'Brown rice flour',value:25},{label:'Filtered water',value:35},{label:'Brown rice flour',value:45},{label:'Filtered water',value:55},{label:'Brown rice flour',value:60},{label:'Filtered water',value:75}],goal:120,mode:'sum'},
+ {title:'Hit the Ratio',rule:'Catch exactly 90 g total. Think before you move—the values are mixed and every extra gram matters.',targets:[{label:'Flour',value:20},{label:'Filtered water',value:30},{label:'Flour',value:40},{label:'Filtered water',value:50},{label:'Flour',value:60},{label:'Filtered water',value:70}],goal:90,mode:'sum'},
+ {title:'Scale Calibration',rule:'Catch only cards that read exactly 50 g. Wrong measurements cost a life.',targets:[{label:'Flour',value:45},{label:'Filtered water',value:50},{label:'Starter',value:55},{label:'Flour',value:50},{label:'Filtered water',value:60},{label:'Starter',value:50}],goal:50,mode:'exact'},
  {title:'Temperature Window',rule:'Catch readings from 72°F through 78°F inclusive. Outside the target range costs a life.',targets:[{label:'Temp',value:68},{label:'Temp',value:72},{label:'Temp',value:75},{label:'Temp',value:78},{label:'Temp',value:81},{label:'Temp',value:76}],goal:0,mode:'range'},
  {title:'Half-Batch Math',rule:'The full batch calls for 160 g. Catch cards until you have exactly half that amount.',targets:[{label:'Ingredient',value:15},{label:'Ingredient',value:20},{label:'Ingredient',value:25},{label:'Ingredient',value:30},{label:'Ingredient',value:35},{label:'Ingredient',value:45}],goal:80,mode:'sum'}
 ];
